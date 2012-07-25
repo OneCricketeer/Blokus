@@ -11,20 +11,20 @@ namespace ConsoleApplications.Blokus
         private static Color playerColor;
         private Player p;
         public Tile selectedPiece;
-        private const float TILE_SIZE = 50; 
+        private const float TILE_SIZE = 50;
 
         public PieceTester()
         {
             InitializeComponent();
             p = new Player();
-            playerColor = colors[new Random().Next(0, 3)];
+            playerColor = colors[new Random().Next(0, 3)]; // Initialize with a random color instead of black
             selectedPiece = new Tile();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             Pen pen = new Pen(Color.Black);
-            
+
             // Text
             StringFormat fmt = new StringFormat();
             fmt.Alignment = StringAlignment.Center;
@@ -50,21 +50,21 @@ namespace ConsoleApplications.Blokus
                         tile = "0";
                         continue;
                     }
-                    
+
                     if (tile != "0")
-                    {   
-                        RectangleF drawRect = new RectangleF(x, y, TILE_SIZE, TILE_SIZE); 
-                        Rectangle cell = new Rectangle((int) drawRect.X, (int)drawRect.Y, (int)drawRect.Width, (int)drawRect.Height);
+                    {
+                        RectangleF drawRect = new RectangleF(x, y, TILE_SIZE, TILE_SIZE);
+                        Rectangle cell = new Rectangle((int)drawRect.X, (int)drawRect.Y, (int)drawRect.Width, (int)drawRect.Height);
                         e.Graphics.FillRectangle(new SolidBrush(playerColor), cell);
                         e.Graphics.DrawRectangle(new Pen(Color.Black, 1), cell);
-//                        e.Graphics.DrawString(tile, drawFont, new SolidBrush(Color.Black), drawRect, fmt);
+                        // e.Graphics.DrawString(tile, drawFont, new SolidBrush(Color.Black), drawRect, fmt);
                     }
-                        
+
                 }
             }
 
-        } 
-        
+        }
+
         private void playerbutton_Click(object sender, EventArgs e)
         {
             Button b = (Button)sender;
@@ -75,20 +75,12 @@ namespace ConsoleApplications.Blokus
 
         private void showButton_Click(object sender, EventArgs e)
         {
-            //            label1.Text = comboBox1.Text;
+            //  label1.Text = comboBox1.Text;
             int i = Convert.ToInt32(comboBox1.Text);
             selectedPiece = (Tile)p.hand[i - 1];
-//            Console.WriteLine(selectedPiece);
+            //  Console.WriteLine(selectedPiece);
             this.Refresh();
         }
-
-        private void rectangleShape1_Click(object sender, EventArgs e)
-        {
-            MouseEventArgs mev = (MouseEventArgs)e;
-            Console.WriteLine("{0} {1}", Math.Floor(mev.X / 50.0), Math.Floor(mev.Y / 50.0));
-        }
-
-       
 
         private void comboBox1_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -101,8 +93,8 @@ namespace ConsoleApplications.Blokus
         {
             selectedPiece.flipHor();
             this.Refresh();
-        }  
-        
+        }
+
         private void flipVbutton_Click(object sender, EventArgs e)
         {
             selectedPiece.flipVert();

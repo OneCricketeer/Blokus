@@ -94,7 +94,7 @@
             this.label1.TabIndex = 3;
             this.label1.Text = "Select the piece to show";
             // 
-            // shapeContainer1
+            // frame
             // 
             this.shapeContainer1.Location = new System.Drawing.Point(0, 0);
             this.shapeContainer1.Margin = new System.Windows.Forms.Padding(0);
@@ -112,7 +112,6 @@
             this.piece.Name = "piece";
             this.piece.Size = new System.Drawing.Size(250, 250);
             this.piece.Visible = false;
-            this.piece.Click += new System.EventHandler(this.rectangleShape1_Click);
             // 
             // label2
             // 

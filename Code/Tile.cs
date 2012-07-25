@@ -9,8 +9,8 @@ namespace ConsoleApplications.Blokus
         #region Fields
         public List<int[]> tile { get; set; }
 
-        private int width { get { return tile[0].Length; } }
-        private int height { get { return tile.Count; } }
+        public int width { get { try { return tile[0].Length; } catch { return 0; } } }
+        public int height { get { return tile.Count; } }
         #endregion Fields
 
         #region Constructors

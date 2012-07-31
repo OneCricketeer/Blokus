@@ -47,13 +47,13 @@
             // 
             this.pieceBorder.Location = new System.Drawing.Point(0, 0);
             this.pieceBorder.Name = "pieceBorder";
-            this.pieceBorder.Size = new System.Drawing.Size(199, 199);
-            this.pieceBorder.Click += new System.EventHandler(this.pieceControl_Click);
-            this.pieceBorder.Paint += new System.Windows.Forms.PaintEventHandler(this.PieceControl_Paint);
+            this.pieceBorder.Size = new System.Drawing.Size(197, 198);
+            this.pieceBorder.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pieceBorder_MouseClick);
             // 
             // PieceControl
             // 
             this.Controls.Add(this.shapeContainer1);
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
             this.Name = "PieceControl";
             this.Size = new System.Drawing.Size(200, 200);
             this.ResumeLayout(false);
@@ -63,6 +63,6 @@
         #endregion
 
         private Microsoft.VisualBasic.PowerPacks.ShapeContainer shapeContainer1;
-        private Microsoft.VisualBasic.PowerPacks.RectangleShape pieceBorder;
+        protected Microsoft.VisualBasic.PowerPacks.RectangleShape pieceBorder;
     }
 }

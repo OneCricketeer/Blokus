@@ -1,16 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Collections;
 
 namespace ConsoleApplications.Blokus
 {
     public class Tile
     {
+        // A comparer used to sort the tiles by score
+
+        #region Compare Methods
+
+        private class TileComparerHelper : IComparer
+        {
+            public TileComparerHelper() { }
+
+            /// <summary>
+            /// Compares the two states. Used to sort them in the FSM
+            /// </summary>
+            /// <param name="obj1">State 1</param>
+            /// <param name="obj2">State 2</param>
+            /// <returns></returns>
+            public int Compare(object obj1, object obj2)
+            {
+                //                n++;
+                Tile t1 = (Tile)obj1;
+                Tile t2 = (Tile)obj2;
+                return t1.score - t2.score;
+            }
+        }
+
+        /// <summary>
+        /// Sorts the states by name
+        /// </summary>
+        public static IComparer SortByScore
+        {
+            get { return (IComparer)new TileComparerHelper(); }
+        }
+
+        #endregion Compare Methods
+
         #region Fields
         public List<int[]> tile { get; set; }
 
         public int width { get { try { return tile[0].Length; } catch { return 0; } } }
         public int height { get { return tile.Count; } }
+        public int score
+        {
+            get
+            {
+                int i = 0;
+                foreach (int[] row in this.tile)
+                {
+                    foreach (int col in row)
+                    {
+                        if (col != 0) i++;
+                    }
+                }
+                return i;
+            }
+        }
+
         #endregion Fields
 
         #region Constructors
@@ -52,10 +102,10 @@ namespace ConsoleApplications.Blokus
             {
                 try
                 {
-                      return tile[row];
+                    return tile[row];
                 }
                 catch { return null; }
-              
+
             }
         }
 
@@ -97,12 +147,10 @@ namespace ConsoleApplications.Blokus
         #region Rotate
 
         // "Rotate" the tile 90 deg clockwise
-        // Assumes an nxn board
         public void rotateCW(bool rotate = true)
         {
             if (rotate)
                 transpose();
-            //            Console.WriteLine("Transpose\n" + this);
             int temp;
             int maxdim = width < height ? width : height;
             // Swap columms
@@ -110,18 +158,14 @@ namespace ConsoleApplications.Blokus
             {
                 for (int j = 0; j < Math.Floor(width / 2.0); j++)
                 {
-                    //                    var lhs = row[j];
-                    //                    var rhs = row[Math.Abs(j - (width - 1))];
                     temp = row[j];
                     row[j] = row[Math.Abs(j - (width - 1))];
                     row[Math.Abs(j - (width - 1))] = temp;
-                    //                    swap(ref lhs, ref rhs);
                 }
             }
         }
 
         // "Rotate" the tile 90 deg counter-clockwise
-        // Assumes an nxn board
         public void rotateCCW(bool rotate = true)
         {
             if (rotate)
@@ -131,16 +175,12 @@ namespace ConsoleApplications.Blokus
             for (int i = 0; i < Math.Floor(height / 2.0); i++)
             {
                 var temp = tile[i];
-                //                var bottom = board[Math.Abs(i - (height - 1))];
                 tile[i] = tile[Math.Abs(i - (height - 1))];
                 tile[Math.Abs(i - (height - 1))] = temp;
-                //                swap(ref top, ref bottom);
             }
-
         }
 
         // Rotate the tile 90*rot deg clockwise
-        // Assumes an nxn board
         public void rotateCW(int rot)
         {
             rot %= 4;
@@ -154,7 +194,6 @@ namespace ConsoleApplications.Blokus
         }
 
         // Rotate the tile 90*rot deg counter-clockwise
-        // Assumes an nxn board
         public void rotateCCW(int rot)
         {
             rot %= 4;
@@ -181,9 +220,48 @@ namespace ConsoleApplications.Blokus
         }
         #endregion Flip
 
+
+        public int getOffset()
+        {
+            int i = 0;
+            while (tile[height -1][i] == 0)
+            {
+                i++;
+            }
+            return i;
+        }
         public override string ToString()
         {
+            if (this.width == 0)
+                return "Empty";
             return RookPolynomial.RookPoly.printBoard(tile.ToArray());
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() != typeof(Tile)) return false;
+
+            Tile t = (Tile)obj;
+            bool b = false;
+            if (this.width != t.width || this.height != t.height) // Not the same size
+                return b;
+            else if (this.width + t.width == 0) // Both are empty
+                return !b;
+
+            for (int i = 0; i < this.height; i++)
+            {
+                for (int j = 0; j < this.width; j++)
+                {
+                    b = this[i][j] == t[i][j];
+                    if (!b) return b;
+                }
+            }
+            return b;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

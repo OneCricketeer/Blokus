@@ -1,38 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace ConsoleApplications.Blokus
 {
     public partial class PieceControl : UserControl
     {
-        public float TILE_SIZE;
+        protected float TILE_SIZE;
         public int piece_index;
         public Tile piece;
-        public Player player;
+        public CurrentPlayer player;
 
         #region Constructors
         public PieceControl()
         {
             InitializeComponent();
+            this.SetStyle(
+            ControlStyles.UserPaint |
+            ControlStyles.AllPaintingInWmPaint |
+            ControlStyles.OptimizedDoubleBuffer, true);
             this.Cursor = System.Windows.Forms.Cursors.Hand;
             this.TILE_SIZE = 10;
-            this.player = new Player();
-            this.piece_index = new Random().Next(0, player.hand.Count);
-            this.piece = (Tile)player.hand[piece_index];
+            player = new CurrentPlayer();
         }
+
         public PieceControl(Tile piece)
             : this()
         {
+            int i = 0;
+            foreach (Tile t in player.hand)
+            {
+                if (t.Equals(piece))
+                {
+                    piece_index = i;
+                    break;
+                }
+                i++;
+            }
             this.piece = piece;
         }
 
-        public PieceControl(Player p)
+        public PieceControl(CurrentPlayer p)
             : this()
         {
             this.player = p;
@@ -49,6 +57,7 @@ namespace ConsoleApplications.Blokus
         {
             this.TILE_SIZE = size;
         }
+
         #endregion
 
         public void fit()
@@ -60,53 +69,9 @@ namespace ConsoleApplications.Blokus
         {
             Graphics g = e.Graphics;
             float xOffset = ((8 - this.piece.width) * TILE_SIZE) / 2;
-            float yOffset = ((5 - this.piece.height) * TILE_SIZE) / 2;
+            float yOffset = ((6 - this.piece.height) * TILE_SIZE) / 2 + 1;
             g.TranslateTransform(xOffset, yOffset);
         }
-        #region Old Paint
-        //  protected override void OnPaint(PaintEventArgs e)
-        //        {
-        //            Pen pen = new Pen(Color.Black);
-        //
-        //            // Text
-        //            StringFormat fmt = new StringFormat();
-        //            fmt.Alignment = StringAlignment.Center;
-        //            fmt.LineAlignment = StringAlignment.Center;
-        //            Font drawFont = new Font("Arial", 16);
-        //            SolidBrush drawBrush = new SolidBrush(Color.DodgerBlue);
-        //            String tile;
-        //            int i = 0;
-        //            int j = 0;
-        //            // Draw
-        //            for (float y = pieceBorder.Bounds.Top; y < pieceBorder.Bounds.Bottom; y += TILE_SIZE, i++)
-        //            {
-        //                j = 0;
-        //                for (float x = pieceBorder.Bounds.Left; x < pieceBorder.Bounds.Right; x += TILE_SIZE, j++)
-        //                {
-        //
-        //                    try
-        //                    {
-        //                        tile = selectedPiece[i][j].ToString();
-        //                    }
-        //                    catch (Exception)
-        //                    {
-        //                        tile = "0";
-        //                        continue;
-        //                    }
-        //
-        //                    if (tile != "0")
-        //                    {
-        //                        RectangleF drawRect = new RectangleF(x, y, TILE_SIZE, TILE_SIZE);
-        //                        Rectangle cell = new Rectangle((int)drawRect.X, (int)drawRect.Y, (int)drawRect.Width, (int)drawRect.Height);
-        //                        e.Graphics.FillRectangle(new SolidBrush(Color.DodgerBlue), cell);
-        //                        e.Graphics.DrawRectangle(new Pen(Color.Black, 1), cell);
-        //                        //  e.Graphics.DrawString(tile, drawFont, new SolidBrush(Color.Black), drawRect, fmt);
-        //                    }
-        //
-        //                }
-        //            }
-        //        }
-        #endregion
 
         #region Tile method callers
         public void rotateCW()
@@ -131,39 +96,22 @@ namespace ConsoleApplications.Blokus
         }
         #endregion
 
-        protected void PieceControl_Paint(object sender, PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            /*
-            for (int x = 0; x < this.Height; x += (int)TILE_SIZE)
-            {
-                g.DrawLine(System.Drawing.Pens.Red, pieceBorder.Left, x,
-                    pieceBorder.Right, x);
-            }
-            for (int y = 0; y < this.Width; y += (int)TILE_SIZE)
-            {
-                g.DrawLine(System.Drawing.Pens.Red, y, pieceBorder.Top,
-                    y, pieceBorder.Bottom);
-            }
-            /**/
             center(e);
 
             Pen pen = new Pen(Color.Black, 1);
-
-            // Text
-            StringFormat fmt = new StringFormat();
-            fmt.Alignment = StringAlignment.Center;
-            fmt.LineAlignment = StringAlignment.Center;
-            Font drawFont = new Font("Arial", 16);
             SolidBrush drawBrush = new SolidBrush(player.Color);
             String tile;
+
             int i = 0;
             int j = 0;
             // Draw
-            for (float y = pieceBorder.Bounds.Top; y < pieceBorder.Bounds.Bottom && i < 5; y += TILE_SIZE, i++)
+            for (float y = 0; y < this.Height && i < 5; y += TILE_SIZE, i++)
             {
                 j = 0;
-                for (float x = pieceBorder.Bounds.Left; x < pieceBorder.Bounds.Right && j < 5; x += TILE_SIZE, j++)
+                for (float x = 0; x < this.Width && j < 5; x += TILE_SIZE, j++)
                 {
                     try
                     {
@@ -181,17 +129,35 @@ namespace ConsoleApplications.Blokus
                         Rectangle cell = new Rectangle((int)drawRect.X, (int)drawRect.Y, (int)drawRect.Width, (int)drawRect.Height);
                         g.FillRectangle(drawBrush, cell);
                         g.DrawRectangle(pen, cell);
-                        //  e.Graphics.DrawString(tile, drawFont, new SolidBrush(Color.Black), drawRect, fmt);
                     }
 
                 }
             }
-
         }
 
-        private void pieceControl_Click(object sender, EventArgs e)
+
+        private void pieceBorder_MouseClick(object sender, MouseEventArgs e)
         {
-            Console.WriteLine("Tile Size: {0}\nBorder Width: {1}\nBorder Height: {2}", this.TILE_SIZE, this.pieceBorder.Width, this.pieceBorder.Height);
+            select();
+        }
+
+        public void select()
+        {
+            // Gives the illusion of swapping pieces
+            swap<Tile>(ref this.piece, ref player.selectedPiece); // Swaps the clicked piece and the selected piece
+            player.hand[piece_index] = this.piece;
+
+            // Redraw the controls
+            this.Refresh(); // Refreshes this control, drawing the previously selected piece
+            player.control.Refresh();// Refreshes the selected piece control, drawing the clicked piece
+        }
+
+        public void swap<T>(ref T a, ref T b)
+        {
+            T temp;
+            temp = a;
+            a = b;
+            b = temp;
         }
     }
     public class SelectedPieceControl : PieceControl
@@ -199,16 +165,35 @@ namespace ConsoleApplications.Blokus
         public SelectedPieceControl()
             : base(40)
         {
-            this.Size = new Size(201, 201);
+            this.pieceBorder.Visible = false;
+            this.pieceBorder.Size = new Size(201, 201);
             base.Cursor = System.Windows.Forms.Cursors.Default;
+            this.piece = player.selectedPiece;
+        }
+        public SelectedPieceControl(Tile piece)
+            : this()
+        {
+            this.piece = piece;
+        }
+
+        public SelectedPieceControl(CurrentPlayer p)
+            : base(p)
+        {
+            this.piece = p.selectedPiece;
         }
 
         public override void center(PaintEventArgs e)
         {
             base.center(e);
             Graphics g = e.Graphics;
-            float xOffset = -(3*TILE_SIZE / 2);
+            float xOffset = -(3 * TILE_SIZE / 2);
             g.TranslateTransform(xOffset, 0);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            this.piece = this.player.selectedPiece;
+            base.OnPaint(e);
         }
     }
 }

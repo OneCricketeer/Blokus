@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-using Microsoft.VisualBasic.PowerPacks;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace ConsoleApplications.Blokus
 {
@@ -10,137 +10,93 @@ namespace ConsoleApplications.Blokus
     {
         public static Color[] colors = new Color[] { Color.DodgerBlue, Color.FromArgb(253, 253, 0), Color.Red, Color.Lime };
         List<Player> players = new List<Player>(4);
-        private Player currentPlayer;
-//        PieceTester f2; 
-        private const float TILE_SIZE = 20;
+        private CurrentPlayer currentPlayer;
         private int turn = 0;
+        private Thread nextturn;
 
         public BlokusGame()
         {
             InitializeComponent();
-            player1 = new Player("Cricket", colors[0]);
-            player2 = new Player("Devon", colors[1]);
-            player3 = new Player("Neil", colors[2]);
-            player4 = new Player("Ruji", colors[3]);
+            player1 = new Player("J", colors[0]);
+            player2 = new Player("Mom", colors[1]);
+            player3 = new Player("Chippy", colors[2]);
+            player4 = new Player("Tim", colors[3]);
             players.AddRange(new Player[] { player1, player2, player3, player4 });
-            currentPlayer = players[turn];
         }
 
         private void Blokus_Load(object sender, EventArgs e)
         {
-            currentPlayer = players[0];
-            // Set the names
-            player1Name.Text = currentPlayer.Name;
-            player2Name.Text = players[1].Name;//= player2.Name;
-            player3Name.Text = players[2].Name;//= player3.Name;
-            player4Name.Text = players[3].Name;//= player4.Name;
-
-            //Set the colors
-            player1Name.BackColor = currentPlayer.Color;
-            player2Name.BackColor = players[1].Color;//= player2.Color;
-            player3Name.BackColor = players[2].Color;//= player3.Color;
-            player4Name.BackColor = players[3].Color;//= player4.Color;
-
-            // Display the number of pieces each player has left
-            player1Num.Text = currentPlayer.piecesLeft.ToString();
-            player2Num.Text =  players[1].piecesLeft.ToString(); //= player2.piecesLeft.ToString();
-            player3Num.Text =  players[2].piecesLeft.ToString(); //= player3.piecesLeft.ToString();
-            player4Num.Text = players[3].piecesLeft.ToString(); //= player4.piecesLeft.ToString();
-
-            pieceControl.player = currentPlayer;
+            // Assign the current player and set the controls
+            currentPlayer = players[0].convertToCurrentPlayer(pieceControl, pieceSelectControl);
             pieceSelectControl.player = currentPlayer;
-            pieceSelectControl.Refresh();
-            pieceControl.Refresh();
-            
-          
-//            playerControl1.player = currentPlayer;
-//            playerControl2 = new PlayerControl(player2);
-//            playerControl3 = new PlayerControl(player3);
-//            playerControl4 = new PlayerControl(player4);
-            // TODO: Delete this. 
-//            f2 = new PieceTester(); // Shows the piece test window
-//            f2.Show();
-        }
+            //            currentPlayer.control = pieceControl;
+            //            currentPlayer.selectControl = pieceSelectControl;
 
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            Graphics g = e.Graphics;
-            // Board GridLines
-            Pen pen = new Pen(Color.Black);
+            // Load the player name tags
+            currentPlayerControl.init(currentPlayer);
+            player2Control.init(players[1]);
+            player3Control.init(players[2]);
+            player4Control.init(players[3]);
 
-            for (double x = this.board.Bounds.Left; x < this.board.Bounds.Right; x += TILE_SIZE)
-            {
-                g.DrawLine(pen, (int)x, this.board.Bounds.Top, (int)x, this.board.Bounds.Bottom);
-            }
-            for (double y = this.board.Bounds.Top; y < this.board.Bounds.Bottom; y += TILE_SIZE)
-            {
-                g.DrawLine(pen, this.board.Bounds.Left, (int)y, this.board.Bounds.Right, (int)y);
-            }
+            // Load the current players pieces
+            currentPlayer.refreshControls();
+            // currentPlayer.selectControl.Reload(currentPlayer, e);
+
+            // Set the color of the tile that is being played
+            matrx._colorNum = this.turn % 4;
+
+            // Pass the player to the board control
+            matrx.setPlayer(currentPlayer);
+
+//            this.pieceSelectControl = currentPlayer.selectControl;
+//            this.pieceSelectControl.Refresh();
         }
 
         private void board_MouseMove(object sender, MouseEventArgs e)
         {
-            Console.WriteLine("{0} {1}", Math.Floor(e.X / TILE_SIZE), Math.Floor(e.Y / TILE_SIZE));
+            //            Console.WriteLine("{0} {1}", Math.Floor(e.X / TILE_SIZE), Math.Floor(e.Y / TILE_SIZE));
         }
 
         // Causes the players to rotate order
         private void nextTurn()
         {
             this.turn++;
-            int end = players.Count -1;
-            Player temp = players[end];
-            for (int i = 0; i < end; i++)
+            //            try
+            //            {
+            //                players[0].hand.RemoveAt(players[0].hand.Count -1);
+            //            }
+            //            catch
+            //            {
+            //                this.Dispose();
+            //            }
+
+            int end = players.Count - 1;
+            Player temp = players[0]; // Store a temporary variable
+
+            for (int i = 1; i <= end; i++)
             {
-                try
-                {
-                 players[i -1] = players[i];   
-                }
-                catch (Exception)
-                {
-                    players[end] = players[0];
-                }
+                players[i - 1] = players[i]; // Clockwise (right to left) swap
             }
-            players[end - 1] = temp;
-
-            // TODO: Rotate the board so the bottom left corner is for the current players tiles
-//            this.Refresh();
+            players[end] = temp; // Reassign the temporary 
         }
 
+
+        private void nextTurnButton_Click(object sender, EventArgs e)
+        {
+            players[0] = currentPlayer; // Store the current player back into a normal player
+
+            nextTurn(); // rotate the players
+            this.matrx.rotate();
+
+            Blokus_Load(sender, e); // Reload the controls
+
+        }
         #region Tile Buttons
-        private void rotateCWButton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.rotateCW();
-            pieceControl.rotateCW();
-//            f2.Refresh();
-        }
-
-        private void rotateCCWbutton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.rotateCCW();
-            pieceControl.rotateCCW();
-//            f2.Refresh();
-        }
-
-        private void flipVButton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.flipVert();
-//            f2.Refresh();
-            pieceControl.flipVert();
-        }
-
-        private void flipHbutton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.flipHor();
-//            f2.Refresh();
-            pieceControl.flipHor();
-        }
+        private void rotateCWButton_Click(object sender, EventArgs e) { pieceControl.rotateCW(); }
+        private void rotateCCWbutton_Click(object sender, EventArgs e) { pieceControl.rotateCCW(); }
+        private void flipVButton_Click(object sender, EventArgs e) { pieceControl.flipVert(); }
+        private void flipHbutton_Click(object sender, EventArgs e) { pieceControl.flipHor(); }
         #endregion
 
-        private void placeTileButton_Click(object sender, EventArgs e)
-        {
-            nextTurn();
-//            currentPlayer.removePiece(pieceControl.piece);
-            Blokus_Load(sender, e);
-        }
     }
 }

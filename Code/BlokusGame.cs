@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-using Microsoft.VisualBasic.PowerPacks;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace ConsoleApplications.Blokus
 {
@@ -10,10 +10,9 @@ namespace ConsoleApplications.Blokus
     {
         public static Color[] colors = new Color[] { Color.DodgerBlue, Color.FromArgb(253, 253, 0), Color.Red, Color.Lime };
         List<Player> players = new List<Player>(4);
-        private Player currentPlayer;
-//        PieceTester f2; 
-        private const float TILE_SIZE = 20;
+        private CurrentPlayer currentPlayer;
         private int turn = 0;
+        private Thread nextturn;
 
         public BlokusGame()
         {
@@ -23,124 +22,113 @@ namespace ConsoleApplications.Blokus
             player3 = new Player("Neil", colors[2]);
             player4 = new Player("Ruji", colors[3]);
             players.AddRange(new Player[] { player1, player2, player3, player4 });
-            currentPlayer = players[turn];
         }
 
         private void Blokus_Load(object sender, EventArgs e)
         {
-            currentPlayer = players[0];
-            // Set the names
-            player1Name.Text = currentPlayer.Name;
-            player2Name.Text = players[1].Name;//= player2.Name;
-            player3Name.Text = players[2].Name;//= player3.Name;
-            player4Name.Text = players[3].Name;//= player4.Name;
+            // Assign the current player and set the controls
+            this.currentPlayer = players[0].convertToCurrentPlayer(pieceControl, pieceSelectControl);
 
-            //Set the colors
-            player1Name.BackColor = currentPlayer.Color;
-            player2Name.BackColor = players[1].Color;//= player2.Color;
-            player3Name.BackColor = players[2].Color;//= player3.Color;
-            player4Name.BackColor = players[3].Color;//= player4.Color;
-
-            // Display the number of pieces each player has left
-            player1Num.Text = currentPlayer.piecesLeft.ToString();
-            player2Num.Text =  players[1].piecesLeft.ToString(); //= player2.piecesLeft.ToString();
-            player3Num.Text =  players[2].piecesLeft.ToString(); //= player3.piecesLeft.ToString();
-            player4Num.Text = players[3].piecesLeft.ToString(); //= player4.piecesLeft.ToString();
-
-            pieceControl.player = currentPlayer;
-            pieceSelectControl.player = currentPlayer;
-            pieceSelectControl.Refresh();
-            pieceControl.Refresh();
-            
-          
-//            playerControl1.player = currentPlayer;
-//            playerControl2 = new PlayerControl(player2);
-//            playerControl3 = new PlayerControl(player3);
-//            playerControl4 = new PlayerControl(player4);
-            // TODO: Delete this. 
-//            f2 = new PieceTester(); // Shows the piece test window
-//            f2.Show();
+            // Setup the game
+            setup();
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        private void setup()
         {
-            Graphics g = e.Graphics;
-            // Board GridLines
-            Pen pen = new Pen(Color.Black);
+            // PieceControls
+            pieceControl.setup(currentPlayer);
 
-            for (double x = this.board.Bounds.Left; x < this.board.Bounds.Right; x += TILE_SIZE)
-            {
-                g.DrawLine(pen, (int)x, this.board.Bounds.Top, (int)x, this.board.Bounds.Bottom);
-            }
-            for (double y = this.board.Bounds.Top; y < this.board.Bounds.Bottom; y += TILE_SIZE)
-            {
-                g.DrawLine(pen, this.board.Bounds.Left, (int)y, this.board.Bounds.Right, (int)y);
-            }
-        }
+            // NameTags
+            currentPlayerControl.setup(currentPlayer);
+            player2Control.setup(players[1]);
+            player3Control.setup(players[2]);
+            player4Control.setup(players[3]);
 
-        private void board_MouseMove(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine("{0} {1}", Math.Floor(e.X / TILE_SIZE), Math.Floor(e.Y / TILE_SIZE));
+            // Board
+            matrx.setup(currentPlayer, this.turn);
+            matrx.Refresh();
+
+            // Redraw the player's controls
+            currentPlayer.refreshControls();
+
         }
 
         // Causes the players to rotate order
         private void nextTurn()
         {
             this.turn++;
-            int end = players.Count -1;
-            Player temp = players[end];
-            for (int i = 0; i < end; i++)
+            //            try
+            //            {
+            //                players[0].hand.RemoveAt(players[0].hand.Count -1);
+            //            }
+            //            catch
+            //            {
+            //                this.Dispose();
+            //            }
+
+            int end = players.Count - 1;
+            Player temp = players[0]; // Store a temporary variable
+
+            for (int i = 1; i <= end; i++)
             {
-                try
+                players[i - 1] = players[i]; // Clockwise (right to left) swap
+            }
+            players[end] = temp; // Reassign the temporary 
+
+            if (players[0].cannotPlay()) // Skip a player if they cannot play
+            {
+                bool allFinished = true;
+                foreach (Player p in players) // Check if each player is done
                 {
-                 players[i -1] = players[i];   
+                    if (!p.cannotPlay())
+                        allFinished = false;
                 }
-                catch (Exception)
+                if (!allFinished)
                 {
-                    players[end] = players[0];
+                    nextTurn(); // Run until the current player can play
+                }
+                else
+                {
+                    ResultForm results = new ResultForm(players);
+                    results.ShowDialog();
                 }
             }
-            players[end - 1] = temp;
-
-            // TODO: Rotate the board so the bottom left corner is for the current players tiles
-//            this.Refresh();
         }
 
+
+        private void nextTurnButton_Click(object sender, EventArgs e)
+        {
+            players[0] = currentPlayer; // Store the current player back into a normal player
+
+            nextTurn(); // rotate the players
+            this.matrx.rotate(); // rotate the board
+
+            Blokus_Load(sender, e); // Reload the controls
+
+        }
         #region Tile Buttons
-        private void rotateCWButton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.rotateCW();
-            pieceControl.rotateCW();
-//            f2.Refresh();
-        }
-
-        private void rotateCCWbutton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.rotateCCW();
-            pieceControl.rotateCCW();
-//            f2.Refresh();
-        }
-
-        private void flipVButton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.flipVert();
-//            f2.Refresh();
-            pieceControl.flipVert();
-        }
-
-        private void flipHbutton_Click(object sender, EventArgs e)
-        {
-//            f2.selectedPiece.flipHor();
-//            f2.Refresh();
-            pieceControl.flipHor();
-        }
+        private void rotateCWButton_Click(object sender, EventArgs e) { pieceControl.rotateCW(); }
+        private void rotateCCWbutton_Click(object sender, EventArgs e) { pieceControl.rotateCCW(); }
+        private void flipVButton_Click(object sender, EventArgs e) { pieceControl.flipVert(); }
+        private void flipHbutton_Click(object sender, EventArgs e) { pieceControl.flipHor(); }
         #endregion
 
-        private void placeTileButton_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            nextTurn();
-//            currentPlayer.removePiece(pieceControl.piece);
-            Blokus_Load(sender, e);
+            currentPlayer.isDone();
         }
+
+        private void matrx_MouseEnter(object sender, EventArgs e)
+        {
+            matrx.BoardControl_MouseEnter(sender, e);
+        }
+
+        private void matrx_Leave(object sender, EventArgs e)
+        {
+            matrx.BoardControl_MouseLeave(sender, e);
+        }
+
+
+
     }
 }

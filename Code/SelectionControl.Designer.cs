@@ -1,6 +1,6 @@
 ﻿namespace ConsoleApplications.Blokus
 {
-    partial class PieceSelectControl
+    partial class SelectionControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -30,17 +30,18 @@
         {
             this.SuspendLayout();
             // 
-            // PieceSelectControl
+            // SelectionControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Name = "PieceSelectControl";
-            this.Size = new System.Drawing.Size(400, 250);
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.PieceSelectControl_MouseClick);
+            this.DoubleBuffered = true;
+            this.Name = "SelectionControl";
+            this.Size = new System.Drawing.Size(400, 248);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
     }
 }

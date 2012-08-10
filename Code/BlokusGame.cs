@@ -12,7 +12,7 @@ namespace ConsoleApplications.Blokus
         List<Player> players = new List<Player>(4);
         private CurrentPlayer currentPlayer;
         private int turn = 0;
-        private Thread nextturn;
+        //        private Thread nextturn;
 
         public BlokusGame()
         {
@@ -26,15 +26,15 @@ namespace ConsoleApplications.Blokus
 
         private void Blokus_Load(object sender, EventArgs e)
         {
-            // Assign the current player and set the controls
-            this.currentPlayer = players[0].convertToCurrentPlayer(pieceControl, pieceSelectControl);
-
             // Setup the game
             setup();
         }
 
         private void setup()
         {
+            // Assign the current player and set the controls
+            this.currentPlayer = players[0].convertToCurrentPlayer(pieceControl, pieceSelectControl);
+
             // PieceControls
             pieceControl.setup(currentPlayer);
 
@@ -50,12 +50,12 @@ namespace ConsoleApplications.Blokus
 
             // Redraw the player's controls
             currentPlayer.refreshControls();
-
         }
 
         // Causes the players to rotate order
         private void nextTurn()
         {
+            players[0] = currentPlayer; // Store the current player back into a normal player
             this.turn++;
             //            try
             //            {
@@ -66,6 +66,7 @@ namespace ConsoleApplications.Blokus
             //                this.Dispose();
             //            }
 
+            /** Rotate the players **/
             int end = players.Count - 1;
             Player temp = players[0]; // Store a temporary variable
 
@@ -74,6 +75,9 @@ namespace ConsoleApplications.Blokus
                 players[i - 1] = players[i]; // Clockwise (right to left) swap
             }
             players[end] = temp; // Reassign the temporary 
+            
+            this.matrx.rotate(); // rotate the board
+            this.setup();
 
             if (players[0].cannotPlay()) // Skip a player if they cannot play
             {
@@ -93,18 +97,15 @@ namespace ConsoleApplications.Blokus
                     results.ShowDialog();
                 }
             }
+
+
         }
 
 
         private void nextTurnButton_Click(object sender, EventArgs e)
         {
-            players[0] = currentPlayer; // Store the current player back into a normal player
-
             nextTurn(); // rotate the players
-            this.matrx.rotate(); // rotate the board
-
             Blokus_Load(sender, e); // Reload the controls
-
         }
         #region Tile Buttons
         private void rotateCWButton_Click(object sender, EventArgs e) { pieceControl.rotateCW(); }
@@ -117,18 +118,5 @@ namespace ConsoleApplications.Blokus
         {
             currentPlayer.isDone();
         }
-
-        private void matrx_MouseEnter(object sender, EventArgs e)
-        {
-            matrx.BoardControl_MouseEnter(sender, e);
-        }
-
-        private void matrx_Leave(object sender, EventArgs e)
-        {
-            matrx.BoardControl_MouseLeave(sender, e);
-        }
-
-
-
     }
 }

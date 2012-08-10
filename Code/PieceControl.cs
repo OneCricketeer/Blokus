@@ -29,7 +29,8 @@ namespace ConsoleApplications.Blokus
             this.piece = piece;
         }
 
-        public PieceControl(Player player, Tile piece) : this(piece)
+        public PieceControl(Player player, Tile piece)
+            : this(piece)
         {
             int i = 0;
             foreach (Tile t in player.hand)
@@ -104,7 +105,7 @@ namespace ConsoleApplications.Blokus
             Graphics g = e.Graphics;
             center(e);
             Pen pen = new Pen(Color.Black, 1);
-            SolidBrush drawBrush = new SolidBrush(player.Color);
+            SolidBrush drawBrush = new SolidBrush(player.color);
             String tile;
 
             int i = 0;
@@ -196,8 +197,9 @@ namespace ConsoleApplications.Blokus
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (this.player != null) {
-                 this.piece = this.player.selectedPiece;
+            if (this.player != null)
+            {
+                this.piece = this.player.selectedPiece;
                 base.OnPaint(e);
             }
         }

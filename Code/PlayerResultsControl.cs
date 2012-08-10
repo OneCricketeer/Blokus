@@ -21,7 +21,7 @@ namespace ConsoleApplications.Blokus
             this.nameLabel.Text = p.Name;
             this.numPieces.Text = p.piecesLeft.ToString();
             this.score.Text = p.Score.ToString();
-            this.BackColor = p.Color;
+            this.BackColor = p.color;
         }
     }
 }

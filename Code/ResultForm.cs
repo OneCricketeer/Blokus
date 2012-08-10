@@ -30,7 +30,7 @@ namespace ConsoleApplications.Blokus
             }
 
             winnerLabel.Text = winnerLabel.Text.Replace("<player>", winner.Name);
-            winnerLabel.BackColor = winner.Color;
+            winnerLabel.BackColor = winner.color;
 
             player1Results.setup(players[0]);
             player2Results.setup(players[1]);

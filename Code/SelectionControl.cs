@@ -12,11 +12,12 @@ namespace ConsoleApplications.Blokus
 
         public SelectionControl()
         {
-            InitializeComponent();
             this.SetStyle(
-            ControlStyles.UserPaint |
-            ControlStyles.AllPaintingInWmPaint |
-            ControlStyles.OptimizedDoubleBuffer, true);
+                ControlStyles.UserPaint |
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.OptimizedDoubleBuffer, true);
+            InitializeComponent();
+
         }
         public SelectionControl(CurrentPlayer p)
             : this()
@@ -32,6 +33,8 @@ namespace ConsoleApplications.Blokus
             int col = 0;
 
             controls = new List<PieceControl>(21);
+
+            // Add the tiles from the player's hand to the control
             for (int i = 0; i < controls.Capacity && i < player.piecesLeft; i++, col++)
             {
                 Tile piece = (Tile)player.hand[i];

@@ -122,8 +122,6 @@ namespace ConsoleApplications.Blokus
             this.matrx.Name = "matrx";
             this.matrx.Size = new System.Drawing.Size(400, 400);
             this.matrx.TabIndex = 26;
-            this.matrx.MouseEnter += new System.EventHandler(this.matrx_MouseEnter);
-            this.matrx.MouseLeave += new System.EventHandler(this.matrx_Leave);
             // 
             // player2Control
             // 

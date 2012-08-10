@@ -15,15 +15,15 @@ namespace ConsoleApplications.Blokus
             : this()
         {
             this.playerName.Text = p.Name;
-            this.playerName.BackColor = p.Color;
+            this.playerName.BackColor = p.color;
             this.numleft.Text = p.piecesLeft.ToString();
             this.scoreNum.Text = p.Score.ToString();
         }
         public void setup(Player p) 
         {
             this.playerName.Text = p.Name;
-            this.playerName.BackColor = p.Color;
-            this.color = p.Color;
+            this.playerName.BackColor = p.color;
+            this.color = p.color;
             this.numleft.Text = p.piecesLeft.ToString();
             this.scoreNum.Text = p.Score.ToString();
             p.nameTag = this;

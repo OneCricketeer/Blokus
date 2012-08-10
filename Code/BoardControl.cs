@@ -29,32 +29,22 @@ namespace ConsoleApplications.Blokus
             this.player = p;
             this._colorNum = turnNumber % 4;
             // TODO: Delete this
-            int num = 0;
-            for (int i = 0; i < matrx.width; i++)
-            {
-                for (int j = 0; j < matrx.height; j++)
-                {
-                    if (i >= 0)
-                        num = 1;
-                    if (i >= 2)
-                        num = 2;
-                    if (i >= 4)
-                        num = 3;
-                    if (i >= 6)
-                        num = 4;
-                    if (i >= 8)
-                        num = 0;
-                    if (i >= 10)
-                        num = 5;
-                    if (i >= 12)
-                        num = 6;
-                    if (i >= 14)
-                        num = 7;
-                    if (i >= 16)
-                        num = 8;
-                    matrx[i][j] = num;
-                }
-            }
+            //            int num = 0;
+            //            for (int i = 0; i < matrx.width; i++)
+            //            {
+            //                for (int j = 0; j < matrx.height; j++)
+            //                {
+            //                    if (i >= 10)
+            //                        num = 5;
+            //                    if (i >= 12)
+            //                        num = 6;
+            //                    if (i >= 14)
+            //                        num = 7;
+            //                    if (i >= 16)
+            //                        num = 8;
+            //                    matrx[i][j] = num;
+            //                }
+            //            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -116,10 +106,12 @@ namespace ConsoleApplications.Blokus
                         tile_num = matrx[i][j];
 
                         #region Color setter
-                        if (tile_num == 9 || tile_num < 0)
+                        if (tile_num == 0)
+                            continue;
+                        else if (tile_num == 9 || tile_num < 0)
                             this.color = Color.White;
                         else if (5 <= tile_num && tile_num < 9)
-                            this.color = BlokusGame.colors[(tile_num  - 1) % 4];
+                            this.color = BlokusGame.colors[(tile_num - 1) % 4];
                         else if (1 <= tile_num && tile_num <= 4)
                             this.color = BlokusGame.colors[tile_num - 1];
                         //                        Console.WriteLine(tile_num);
@@ -131,7 +123,7 @@ namespace ConsoleApplications.Blokus
                         Rectangle cell = new Rectangle((int)drawRect.X, (int)drawRect.Y, (int)drawRect.Width, (int)drawRect.Height);
                         e.Graphics.FillRectangle(new SolidBrush(this.color), cell);
                         e.Graphics.DrawRectangle(new Pen(Color.Black, 1), cell);
-//                        e.Graphics.DrawString(tile.ToString(), drawFont, new SolidBrush(Color.Black), drawRect, fmt);
+                        e.Graphics.DrawString(tile.ToString(), drawFont, new SolidBrush(Color.Black), drawRect, fmt);
                         #endregion
                     }
                 }
@@ -174,39 +166,36 @@ namespace ConsoleApplications.Blokus
                     for (int j = 0; j < matrx.height; j++)
                     {
                         z = matrx[i][j];
-                        if (z == 0) continue;
+                        if (z == 0 || 5 <= z && z < 9) continue;
                         if (0 < z && z < 5)
                         {
-                            matrx[i][j] = 0;
+                            matrx[i][j] = 0; // Undraw "hovering" pieces
                         }
 
                         else if (z == 9)
                             matrx[i][j] = -1 * z;
                         else if (z < 0)
-                            matrx[i][j] *= -1;
+                            matrx[i][j] *= -1; // Un-whiten "overlapping" pieces
                     }
                 }
             }
             else if (MouseButtons.Left.Equals(e.Button))
+            {
                 clicked = true;
+            }
+
             else
             {
                 clear();
             }
 
-
-            if (inXBounds && inYBounds)
-            {
-                int row = (int)Math.Floor(e.Y / TILE_SIZE);
-                int col = (int)Math.Floor(e.X / TILE_SIZE);
-
-                // matrx[row][col] += this._colorNum + 1;
-
-                //                if (clicked) // Comment to the overlay
+            if (!clicked) // Blocks click & drag
                 this.BoardControl_MouseClick(sender, e); // Shows an overlap of the selected piece
+            else
+                return;
 
-                this.Refresh();
-            }
+            this.Refresh();
+            //            }
         }
 
         private void clear()
@@ -227,8 +216,8 @@ namespace ConsoleApplications.Blokus
             bool inYBounds = e.Y > 0 && e.Y < this.Height;
             bool clicked = false;
             int prevRow = 0, prevCol = 0;
-            int z;
             #endregion
+
             // Undraw entire board while no click is pressed
             //            if (MouseButtons.None.Equals(e.Button))
             //            {
@@ -248,9 +237,10 @@ namespace ConsoleApplications.Blokus
             //                    }
             //                }
             //            }
+
             if (MouseButtons.Left.Equals(e.Button) && (inXBounds && inYBounds))
             {
-                    clicked = true;
+                clicked = true;
             }
 
             if (inXBounds && inYBounds)
@@ -260,12 +250,11 @@ namespace ConsoleApplications.Blokus
                 if (prevRow != row) prevRow = row;
                 int col = (int)Math.Floor(e.X / TILE_SIZE);
                 if (prevCol != col) prevCol = col;
-                bool overlap = false;
 
                 // Get the bottom offset of the piece
                 int offset = player.selectedPiece.getOffset();
 
-                // This is a little messy
+                // This is a little messy but it paints the piece at the location of the mouse on the board
                 for (int matrx_i = prevRow + 1, tile_i = player.selectedPiece.height;
                      matrx_i > prevRow - 5 && tile_i >= 0;
                      matrx_i--, tile_i--)
@@ -273,11 +262,11 @@ namespace ConsoleApplications.Blokus
                     #region Piece Offset
                     // The mouse starts on the first square in the bottom row
                     int tile_j;
-                    if (tile_i == player.selectedPiece.height - 1)
+                    if (tile_i == player.selectedPiece.height - 1) // the bottom row
                     {
                         tile_j = offset;
                     }
-                    else
+                    else // the rows above the bottom
                     {
                         tile_j = 0;
                     }
@@ -298,31 +287,38 @@ namespace ConsoleApplications.Blokus
                                  * If 1 < x < 5, x = _colorNum + 5
                                  * If 5 < x < 9, x = 9
                                  */
-                                if (1 <= x && x < 5)
-                                {
-                                    //                                    Console.WriteLine(x);
-                                    //                                    Console.WriteLine("Ummm " + x);
-                                    matrx[matrx_i][matrx_j] = _colorNum + 1;
-                                }
+                                //                                if (x == 0 && clicked)
+                                //                                    Console.WriteLine("What do?");
+                                //                                if (1 <= x && x < 5)
+                                //                                {
+                                //                                    //                                    Console.WriteLine(x);
+                                //                                    //                                    Console.WriteLine("Ummm " + x);
+                                //                                    matrx[matrx_i][matrx_j] = _colorNum + 1;
+                                //                                }
 
-                                else if (5 <= x && x < 9)
+                                if (5 <= x && x < 9)
                                 {
-                                    Console.WriteLine("Overlapping");
+                                    //                                    Console.WriteLine("Overlapping");
                                     //                                    overlap = true;
                                     matrx[matrx_i][matrx_j] *= -1; // overlap  
                                 }
 
-                                else if (x == 9)
+                                else if (x == 0)
                                 {
-                                    continue;
+                                    if (clicked)
+                                        matrx[matrx_i][matrx_j] = _colorNum + 5;
+                                    else
+                                        matrx[matrx_i][matrx_j] = _colorNum + 1;
                                 }
                                 else
                                 {
-                                    // else x <= 0 OR x > 9 
-                                    matrx[matrx_i][matrx_j] = clicked ? _colorNum + 5 : _colorNum + 1;
+                                    // else x < 0 OR x > 9 
+                                    if (clicked)
+                                        matrx[matrx_i][matrx_j] = _colorNum + 5;
+
+
                                 }
                             }
-
                         }
                         catch (Exception) { continue; }
                     }
@@ -331,18 +327,36 @@ namespace ConsoleApplications.Blokus
         }
 
 
-
-        internal void BoardControl_MouseEnter(object sender, EventArgs e)
+        private void BoardControl_MouseLeave(object sender, EventArgs e)
         {
-            Console.WriteLine(_colorNum);
-        }
+            for (int tile_i = 0; tile_i < player.selectedPiece.height; tile_i++)
+            {
+                for (int tile_j = 0; tile_j < player.selectedPiece.width; tile_j++)
+                {
+                    try
+                    {
+                        player.selectedPiece[tile_i][tile_j] = 0;
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
 
-
-        internal void BoardControl_MouseLeave(object sender, EventArgs e)
-        {
-            Console.WriteLine("Leaving");
+                }
+            }
+            this.Refresh();
         }
         #endregion
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            clear();
+        }
+        //
+        //        protected override void OnMouseUp(MouseEventArgs e)
+        //        {
+        //            this._colorNum -= 4;
+        //        }
     }
 
     /// <summary>

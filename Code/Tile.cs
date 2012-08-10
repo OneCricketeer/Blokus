@@ -224,17 +224,22 @@ namespace ConsoleApplications.Blokus
         public int getOffset()
         {
             int i = 0;
-            while (tile[height -1][i] == 0)
+            try
             {
-                i++;
+                while (tile[height - 1][i] == 0)
+                {
+                    i++;
+                }
             }
+            catch { return 0; }
+
             return i;
         }
         public override string ToString()
         {
             if (this.width == 0)
                 return "Empty";
-            return RookPolynomial.RookPoly.printBoard(tile.ToArray());
+            return RookPolynomial.RookPoly.printBoard(tile);
         }
 
         public override bool Equals(object obj)

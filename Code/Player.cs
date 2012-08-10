@@ -8,8 +8,8 @@ namespace ConsoleApplications.Blokus
         public PlayerControl nameTag;
         private TileGenerator tg = new TileGenerator();
         public string Name;
-        public System.Drawing.Color Color;
-        private bool finished;
+        public System.Drawing.Color color;
+        protected bool finished;
         public int Score
         {
             get
@@ -62,10 +62,10 @@ namespace ConsoleApplications.Blokus
             this.Name = Name;
         }
 
-        public Player(string Name, System.Drawing.Color Color)
+        public Player(string Name, System.Drawing.Color color)
             : this(Name)
         {
-            this.Color = Color;
+            this.color = color;
             removePiece(selectedPiece);
         }
 
@@ -98,7 +98,7 @@ namespace ConsoleApplications.Blokus
             CurrentPlayer c = new CurrentPlayer();
             c.Name = this.Name;
             c.hand = this.hand;
-            c.Color = this.Color;
+            c.color = this.color;
             c.selectedPiece = this.selectedPiece;
             return c;
         }
@@ -128,8 +128,9 @@ namespace ConsoleApplications.Blokus
         {
             this.Name = p.Name;
             this.hand = p.hand;
-            this.Color = p.Color;
+            this.color = p.color;
             this.selectedPiece = p.selectedPiece;
+            this.finished = p.cannotPlay();
         }
 
         public CurrentPlayer(Player p, SelectedPieceControl c, SelectionControl s)
